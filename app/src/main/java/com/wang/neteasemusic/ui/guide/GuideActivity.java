@@ -36,24 +36,23 @@ public class GuideActivity extends BaseActivity {
 
     private void initData() {
         fragments = new ArrayList<>();
-
-        GuideFragment guideFragment1 = new GuideFragment();
+        GuideFragment fragment1 = new GuideFragment();
         Bundle bundle1 = new Bundle();
         bundle1.putInt("index", 1);
-        guideFragment1.setArguments(bundle1);
-        fragments.add(guideFragment1);
+        fragment1.setArguments(bundle1);
+        fragments.add(fragment1);
 
-        GuideFragment guideFragment2 = new GuideFragment();
+        GuideFragment fragment2 = new GuideFragment();
         Bundle bundle2 = new Bundle();
-        bundle1.putInt("index", 2);
-        guideFragment2.setArguments(bundle2);
-        fragments.add(guideFragment2);
+        bundle2.putInt("index", 2);
+        fragment2.setArguments(bundle2);
+        fragments.add(fragment2);
 
-        GuideFragment guideFragment3 = new GuideFragment();
+        GuideFragment fragment3 = new GuideFragment();
         Bundle bundle3 = new Bundle();
-        bundle1.putInt("index", 3);
-        guideFragment3.setArguments(bundle3);
-        fragments.add(guideFragment3);
+        bundle3.putInt("index", 3);
+        fragment3.setArguments(bundle3);
+        fragments.add(fragment3);
     }
 
     private void initView() {
@@ -63,7 +62,7 @@ public class GuideActivity extends BaseActivity {
         image_doto2 = (ImageView) findViewById(R.id.iv2);
         image_doto3 = (ImageView) findViewById(R.id.iv3);
 
-        mViewPager.setOffscreenPageLimit(3);
+        mViewPager.setOffscreenPageLimit(2);
         mViewPager.setAdapter(new MyPageAdapter(getSupportFragmentManager()));
         mViewPager.addOnPageChangeListener(new MyPagerListener());
 
