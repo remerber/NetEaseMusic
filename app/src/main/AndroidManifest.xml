@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <!-- 欢迎界面 -->
-        <activity android:name=".ui.WelcomeActivity">
+        <activity android:name=".ui.music.WelcomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -21,7 +21,8 @@
         </activity>
 
         <!-- 引导界面 -->
-        <activity android:name=".ui.guide.GuideActivity"/>
+        <activity android:name=".ui.guide.GuideActivity" />
+        <activity android:name=".ui.music.MainActivity" />
 
     </application>
 

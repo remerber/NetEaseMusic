@@ -7,11 +7,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
 import com.wang.neteasemusic.R;
 import com.wang.neteasemusic.ui.BaseActivity;
+import com.wang.neteasemusic.ui.music.MainActivity;
 
 import java.util.ArrayList;
 
@@ -29,6 +31,9 @@ public class GuideActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);  //全屏
+
         setContentView(R.layout.activity_guide);
         initData();
         initView();
@@ -65,6 +70,14 @@ public class GuideActivity extends BaseActivity {
         mViewPager.setOffscreenPageLimit(2);
         mViewPager.setAdapter(new MyPageAdapter(getSupportFragmentManager()));
         mViewPager.addOnPageChangeListener(new MyPagerListener());
+
+        btn_start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(MainActivity.class);
+                finish();
+            }
+        });
 
     }
 
