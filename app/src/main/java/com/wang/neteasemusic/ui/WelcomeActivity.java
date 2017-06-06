@@ -7,10 +7,12 @@ import android.animation.ObjectAnimator;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.KeyEvent;
+import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 
 import com.wang.neteasemusic.R;
+import com.wang.neteasemusic.ui.BaseActivity;
 import com.wang.neteasemusic.ui.guide.GuideActivity;
 
 /**
@@ -23,6 +25,8 @@ public class WelcomeActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);  //全屏
         setContentView(R.layout.activity_welcome);
         initView();
         startAnimation();
