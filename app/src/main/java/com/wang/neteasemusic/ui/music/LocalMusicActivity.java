@@ -9,7 +9,6 @@ import android.support.v7.widget.Toolbar;
 
 import com.wang.neteasemusic.R;
 import com.wang.neteasemusic.ui.adapter.LocalViewPagerAdapter;
-import com.wang.neteasemusic.ui.album.AlbumFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,8 @@ public class LocalMusicActivity extends AppCompatActivity {
     private LocalViewPagerAdapter adapter;
     private List<Fragment> fragments;
     private List<String> list_tiles;
-private Toolbar toolbar;
+    private Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,9 +33,9 @@ private Toolbar toolbar;
     }
 
     private void setData() {
-        AlbumFragment musicFragment1 = new AlbumFragment();
-        AlbumFragment musicFragment2 = new AlbumFragment();
-        AlbumFragment musicFragment3 = new AlbumFragment();
+        LocalMusicFragment musicFragment1 = new LocalMusicFragment();
+        LocalMusicFragment musicFragment2 = new LocalMusicFragment();
+        LocalMusicFragment musicFragment3 = new LocalMusicFragment();
         fragments = new ArrayList<>();
         fragments.add(musicFragment1);
         fragments.add(musicFragment2);
@@ -50,10 +50,11 @@ private Toolbar toolbar;
     private void initView() {
         mTableLayout = (TabLayout) findViewById(R.id.local_table);
         mViewPager = (ViewPager) findViewById(R.id.vp_local);
-        toolbar= (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("本地音乐");
         setSupportActionBar(toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_menu);
-      
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
 
     }
