@@ -1,6 +1,7 @@
 package com.wang.neteasemusic.ui.music;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,6 +16,7 @@ import com.wang.neteasemusic.data.Song;
 import com.wang.neteasemusic.model.LocalIview;
 import com.wang.neteasemusic.music.MusicPlaylist;
 import com.wang.neteasemusic.ui.adapter.LocalRecyclerViewAdapter;
+import com.wang.neteasemusic.ui.play.PlayingActivity;
 
 import java.util.List;
 
@@ -38,7 +40,7 @@ public class LocalMusicFragment extends Fragment implements LocalIview.LocalMusi
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         libraryPresenter = new LocalLibraryPresenter(this, getActivity());
-        musicPlaylist=new MusicPlaylist();
+        musicPlaylist = new MusicPlaylist();
 
 
     }
@@ -58,8 +60,15 @@ public class LocalMusicFragment extends Fragment implements LocalIview.LocalMusi
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         adapter = new LocalRecyclerViewAdapter(getActivity());
         mRecyclerView.setAdapter(adapter);
-
         libraryPresenter.requestMusic();
+        adapter.setOnItemClickListener(new LocalRecyclerViewAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                startActivity(new Intent(getActivity(), PlayingActivity.class));
+
+            }
+        });
+
 
     }
 

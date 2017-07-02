@@ -26,6 +26,7 @@ import java.util.List;
 public class LocalRecyclerViewAdapter extends RecyclerView.Adapter<LocalRecyclerViewAdapter.LocalMusicViewHolder> {
     private Context context;
     private List<Song> songs;
+    private OnItemClickListener onItemClickLitener;
 
     public LocalRecyclerViewAdapter(Context context) {
         this.context = context;
@@ -39,7 +40,7 @@ public class LocalRecyclerViewAdapter extends RecyclerView.Adapter<LocalRecycler
     }
 
     @Override
-    public void onBindViewHolder(LocalMusicViewHolder holder, int position) {
+    public void onBindViewHolder(final LocalMusicViewHolder holder, int position) {
         final Song song = songs.get(position);
         holder.title.setText(Html.fromHtml(song.getTitle()));
         if (TextUtils.isEmpty(song.getArtistName())) {
@@ -51,6 +52,15 @@ public class LocalRecyclerViewAdapter extends RecyclerView.Adapter<LocalRecycler
                 .load(song.getCoverUrl())
                 .placeholder(R.drawable.cover)
                 .into(holder.cover);
+        if (onItemClickLitener != null) {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int pos = holder.getLayoutPosition();
+                    onItemClickLitener.onItemClick(holder.itemView, pos);
+                }
+            });
+        }
     }
 
     @Override
@@ -61,6 +71,10 @@ public class LocalRecyclerViewAdapter extends RecyclerView.Adapter<LocalRecycler
     public void setData(List<Song> songs) {
         this.songs = songs;
         notifyDataSetChanged();
+    }
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickLitener = onItemClickListener;
     }
 
     public class LocalMusicViewHolder extends RecyclerView.ViewHolder {
@@ -95,6 +109,11 @@ public class LocalRecyclerViewAdapter extends RecyclerView.Adapter<LocalRecycler
 //                    }
 //                }
 //            });
+
         }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(View view, int position);
     }
 }
