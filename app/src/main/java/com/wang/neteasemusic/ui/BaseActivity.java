@@ -8,6 +8,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.wang.neteasemusic.service.MusicServiceHelper;
+
 /**
  * Created by HP on 2017/6/1. Activity的基类
  */
@@ -18,6 +20,7 @@ public class BaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //默认屏幕不能横屏
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        MusicServiceHelper.get(getApplication()).initService();
     }
 
     /**
