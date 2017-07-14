@@ -365,5 +365,6 @@
     <color name="red_dark">#C62828</color>
     <color name="red_trans">#99F44336</color>
     <color name="test_color">#696969</color>
+    <color name="light_color">#70000000</color>
 
 </resources>

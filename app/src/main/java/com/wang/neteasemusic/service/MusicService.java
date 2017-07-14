@@ -48,6 +48,7 @@ public class MusicService extends Service {
     /***
      * 使用MediaButtonReceiVer来兼容api21之前的版本
      */
+
     private void setUpMediaSession() {
         ComponentName componentName = new ComponentName(getPackageName(), MediaButtonReceiver.class.getName());
         mediaSession = new MediaSessionCompat(this, "fd", componentName, null);
@@ -58,10 +59,9 @@ public class MusicService extends Service {
         mediaSession.setCallback(new MediaSessionCallback());
         setState(PlaybackStateCompat.STATE_NONE);
 
-
     }
 
-    private void setState(int state) {
+    public void setState(int state) {
 
         mState = new PlaybackStateCompat.Builder()
                 .setActions(

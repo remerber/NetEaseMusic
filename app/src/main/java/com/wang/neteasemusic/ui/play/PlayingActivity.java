@@ -1,149 +1,200 @@
 package com.wang.neteasemusic.ui.play;
 
-import android.content.ComponentName;
+
+import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
+import android.support.v4.media.session.PlaybackStateCompat;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.wang.neteasemusic.R;
-import com.wang.neteasemusic.common.utils.LocalMusicLibrary;
+import com.wang.neteasemusic.common.utils.ImageUtils;
 import com.wang.neteasemusic.data.Song;
-import com.wang.neteasemusic.service.MusicService;
+import com.wang.neteasemusic.service.MusicPlayerManager;
+import com.wang.neteasemusic.service.OnSongchangeListener;
 import com.wang.neteasemusic.ui.BaseActivity;
 
 import java.text.DecimalFormat;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 
 /**
  * Created by HP on 2017/7/2.
  */
 
-public class PlayingActivity extends BaseActivity implements View.OnClickListener {
-    private TextView time_current, time_duration;
-    private SeekBar seekBar;
-    private ImageView im_back, im_play, im_next;
-    private MusicService musicService;
-    private ServiceConnection connection;
-    private MediaPlayer mediaPlayer = new MediaPlayer();
-    private List<Song> allSongs;
-    int index;
+public class PlayingActivity extends BaseActivity implements OnSongchangeListener {
 
 
-    private class MyServiceConnection implements ServiceConnection {
+    /**
+     * 播放seekbar
+     **/
+    @BindView(R.id.play_seek)
+    SeekBar mPlaySeek;
+    /**
+     * 歌曲的长度
+     **/
+    @BindView(R.id.music_duration)
+    TextView mMusicDuration;
 
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicService.MyBinder myBinder = (MusicService.MyBinder) service;
-            musicService = myBinder.getMusicService();
-            mediaPlayer = musicService.mediaPlayer;
-            if (mediaPlayer != null) {
-                //播放音乐
-                playMusic(0);
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        playMusic(1);
-                    }
-                });
-            }
+    /**
+     * 上一首
+     **/
+    @BindView(R.id.playing_pre)
+    ImageView mPlayingPre;
 
-        }
+    /**
+     * 播放按钮
+     **/
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
+    @BindView(R.id.playing_play)
+    ImageView mPlayingPlay;
 
-        }
-    }
+    /**
+     * 播放下一首
+     **/
+    @BindView(R.id.playing_next)
+    ImageView mPlayingNext;
 
-    private Handler mHandler = new Handler();
-    private Runnable mRunnable = new Runnable() {
-        @Override
-        public void run() {
-            seekBar.setProgress(mediaPlayer.getCurrentPosition());
-            time_current.setText(formatChange(mediaPlayer.getCurrentPosition()));
-            mHandler.postDelayed(mRunnable, 100);
-        }
-    };
+    @BindView(R.id.coverImage)
+    ImageView mCoverImage;
+    @BindView(R.id.music_duration_played)
+    TextView mMusicDurationPlayed;
+    private Toolbar toolbar;
+    private Song song;
+
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playing);
-        //开启服务
-        Intent intent = new Intent(this, MusicService.class);
-        startService(intent);
-        //绑定服务
-        connection = new MyServiceConnection();
-        bindService(intent, connection, BIND_AUTO_CREATE);
-        initView();
-        init();
-        mHandler.removeCallbacks(mRunnable);
-        mHandler.post(mRunnable);
+        ButterKnife.bind(this);
+        MusicPlayerManager.get().registerListener(this);
+        initData();
+        updateProgress();
+        updateData();
+
+
     }
 
 
-    private void initView() {
+    private void initData() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        time_current = (TextView) findViewById(R.id.music_duration_played);
-        time_duration = (TextView) findViewById(R.id.music_duration);
+        song = MusicPlayerManager.get().getPlayingSong();
+        if (song == null) {
+            finish();
+        }
 
-        seekBar = (SeekBar) findViewById(R.id.play_seek);
-
-        im_back = (ImageView) findViewById(R.id.play_back);
-        im_back.setOnClickListener(this);
-        im_play = (ImageView) findViewById(R.id.play_start);
-        im_play.setOnClickListener(this);
-        im_next = (ImageView) findViewById(R.id.play_next);
-        im_next.setOnClickListener(this);
-
-    }
-
-    private void init() {
-        allSongs = LocalMusicLibrary.getAllSongs(this);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mPlaySeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-               if(fromUser){
-                   if(mediaPlayer!=null){
-                       mediaPlayer.seekTo(progress);
-                   }
-               }
+                if (fromUser) {
+                    MusicPlayerManager.get().seekTo(progress);
+                }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
 
     }
 
-    /**
-     * 根据歌曲下标播放音乐
-     *
-     * @param index
+    /***
+     * 更新进度条,进度显示,歌曲长度
      */
-    private void playMusic(int index) {
-        if (allSongs.size() > 0) {
-            musicService.play(allSongs.get(index).getPath());
-            time_duration.setText(formatChange(allSongs.get(index).getDuration()));
+    private void updateProgress() {
+        Observable.interval(1000, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Long>() {
+                    @Override
+                    public void call(Long aLong) {
+                        mPlaySeek.setMax(MusicPlayerManager.get().getCurrentMaxDuration());
+                        mPlaySeek.setProgress(MusicPlayerManager.get().getCurrentPosition());
+                        mMusicDuration.setText(formatChange(
+                                MusicPlayerManager
+                                        .get()
+                                        .getCurrentMaxDuration()));
+                        mMusicDurationPlayed.setText(formatChange(
+                                MusicPlayerManager
+                                        .get()
+                                        .getCurrentPosition()));
+
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+
+                    }
+                });
+    }
+
+
+    /***
+     * 更新数据:封面,标题,图标
+     */
+    private void updateData() {
+        //歌曲的封面
+        String coverUrl = song.getCoverUrl();
+        ImageUtils.GlideWith(this, coverUrl, R.drawable.ah1, mCoverImage);
+
+        toolbar.setTitle(song.getTitle());
+
+        if (MusicPlayerManager.get().getPlayingSong() != null) {
+            mPlayingPlay.setImageResource(R.drawable.play_rdi_btn_pause);
         }
-        seekBar.setMax(mediaPlayer.getDuration());
+    }
+
+    @Override
+    public void onSongChanged(Song song) {
+        this.song = song;
+        updateData();
+    }
+
+    @Override
+    public void onPlayBackStateChanged(PlaybackStateCompat state) {
 
     }
+
+    @OnClick({R.id.playing_pre, R.id.playing_play, R.id.playing_next})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.playing_pre:
+                MusicPlayerManager.get().playPrev();
+                break;
+            case R.id.playing_play:
+                if (MusicPlayerManager.get().getState() == PlaybackStateCompat.STATE_PLAYING) {
+                    MusicPlayerManager.get().pause();
+                    mPlayingPlay.setImageResource(R.drawable.play_rdi_btn_play);
+                } else if (MusicPlayerManager.get().getState() == PlaybackStateCompat.STATE_PAUSED) {
+                    MusicPlayerManager.get().play();
+                    mPlayingPlay.setImageResource(R.drawable.play_rdi_btn_pause);
+                }
+
+
+                break;
+            case R.id.playing_next:
+                MusicPlayerManager.get().playNext();
+                break;
+        }
+    }
+
 
     /***
      * 对歌曲长度的格式进行转换
@@ -153,59 +204,25 @@ public class PlayingActivity extends BaseActivity implements View.OnClickListene
     public String formatChange(int millSeconds) {
         int seconds = millSeconds / 1000;
         int second = seconds % 60;
-        int minute = (seconds - second) / 60;
+        int munite = (seconds - second) / 60;
         DecimalFormat decimalFormat = new DecimalFormat("00");
-        return decimalFormat.format(minute) + ":" + decimalFormat.format(second);
-    }
+        return decimalFormat.format(munite) + ":" + decimalFormat.format(second);
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.play_back:
-                playMusicByStatus(2);
-                break;
-            case R.id.play_start:
-                if (mediaPlayer != null) {
-                    if (mediaPlayer.isPlaying()) {
-                        musicService.pause();
-                    } else {
-                        musicService.continueMusic();
-                    }
-                }
-                break;
-            case R.id.play_next:
-                playMusicByStatus(1);
-                break;
-        }
-    }
-
-    private void playMusicByStatus(int status) {
-        switch (status) {
-            case 0:
-                break;
-            case 1:
-                //播放下一首
-                index++;
-                if (index == allSongs.size()) {
-                    index = 0;
-                }
-
-                break;
-            case 2:
-                //播放上一首
-                index--;
-                if (index == -1) {
-                    index = allSongs.size() - 1;
-                }
-                break;
-        }
-        playMusic(index);
 
     }
+
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(connection);
+        MusicPlayerManager.get().unregisterListener(this);
     }
+
+    public static void open(Context context) {
+        Intent intent = new Intent();
+        intent.setClass(context, PlayingActivity.class);
+        context.startActivity(intent);
+    }
+
+
 }

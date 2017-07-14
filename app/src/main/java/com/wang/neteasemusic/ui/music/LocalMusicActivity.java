@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 
 import com.wang.neteasemusic.R;
 import com.wang.neteasemusic.ui.adapter.LocalViewPagerAdapter;
+import com.wang.neteasemusic.ui.local.LocalMusicFragment;
 
 import java.util.ArrayList;
 import java.util.List;
